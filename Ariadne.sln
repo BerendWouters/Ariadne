@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30128.74
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ariadne", "Ariadne\Ariadne.csproj", "{395F105B-B741-4B0F-8CC3-FB085D870809}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ariadne.Web", "Ariadne.Web\Ariadne.Web.csproj", "{395F105B-B741-4B0F-8CC3-FB085D870809}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ariadne.Core", "Ariadne.Core\Ariadne.Core.csproj", "{1D85AE20-FF84-47D2-AB5A-C4A23A4EB1EB}"
 EndProject
