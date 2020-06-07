@@ -1,0 +1,59 @@
+﻿@page "/interfaces"
+@using Ariadne.Core
+@using Ariadne.Components
+
+@inject NetworkInterfaceDiscoveryService NetworkInterfaceDiscoveryService  
+
+<h3>Network interfaces</h3>
+
+@if (networkInterfaces == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var networkInterface in networkInterfaces)
+        {
+            <tr>
+                <td>@networkInterface.Name 
+                    @foreach (var ipaddress in networkInterface.IPv4Addresses)
+                    {
+                        <IPAddress IpAddressValue="@ipaddress.Address.ToString()" OnSelectIPAddress="@OnIPAddressSelected"></IPAddress>
+                    }
+                </td>
+                <td>@networkInterface.Type</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <div>
+        @selectedIPAddress
+    </div>
+}
+
+@code {
+
+    public string selectedIPAddress { get; set; }
+
+    private List<NetworkInterfaceDiscoveryService.DiscoveredNetworkInterface> networkInterfaces;
+
+    protected override void OnInitialized()
+    {
+        NetworkInterfaceDiscoveryService.Start();
+        networkInterfaces = NetworkInterfaceDiscoveryService.Interfaces;
+    }
+
+    private void OnIPAddressSelected(string ipaddress)
+    {
+        selectedIPAddress = ipaddress;
+    }
+
+}

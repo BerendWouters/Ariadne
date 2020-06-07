@@ -1,0 +1,16 @@
+﻿<MatChip Label="@IpAddressValue" LeadingIcon="router" @onclick="@(async () => await OnClick())">
+</MatChip>
+
+@code {
+    [Parameter]
+    public string IpAddressValue { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSelectIPAddress { get; set; }
+
+    private async Task OnClick()
+    {
+        await OnSelectIPAddress.InvokeAsync(IpAddressValue);
+    }
+
+}
