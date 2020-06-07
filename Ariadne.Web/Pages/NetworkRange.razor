@@ -1,0 +1,22 @@
+﻿@page "/networkrange/{IPAddress}"
+@using Ariadne.Core
+@using System.Net
+
+@inject NetworkDiscoveryService NetworkDiscoveryService
+
+<h3>NetworkRange</h3>
+<p>Requested network range for @IPAddress</p>
+
+<MatButton @onclick="@StartScanning">Start scanning</MatButton>
+
+@code {
+    private string IPAddress => DiscoveredIPAddress.Address.ToString();
+
+    [Parameter]
+    public DiscoveredIPAddress DiscoveredIPAddress { get; set; }
+
+    public void StartScanning()
+    {
+        NetworkDiscoveryService.Start(DiscoveredIPAddress);
+    }
+}

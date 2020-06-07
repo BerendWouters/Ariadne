@@ -3,6 +3,7 @@
 @using Ariadne.Web.Components
 
 @inject NetworkInterfaceDiscoveryService NetworkInterfaceDiscoveryService  
+@inject NavigationManager NavigationManager
 
 <h3>Network interfaces</h3>
 
@@ -26,7 +27,7 @@ else
                 <td>@networkInterface.Name 
                     @foreach (var ipaddress in networkInterface.IPv4Addresses)
                     {
-                        <IPAddress IpAddressValue="@ipaddress.Address.ToString()" OnSelectIPAddress="@OnIPAddressSelected"></IPAddress>
+                        <IPAddressSelector DiscoveredIPAddress="@ipaddress" OnSelectIPAddress="@OnIPAddressSelected"></IPAddressSelector>
                     }
                 </td>
                 <td>@networkInterface.Type</td>
@@ -51,9 +52,10 @@ else
         networkInterfaces = NetworkInterfaceDiscoveryService.Interfaces;
     }
 
-    private void OnIPAddressSelected(string ipaddress)
+    private void OnIPAddressSelected(DiscoveredIPAddress ipaddress)
     {
-        selectedIPAddress = ipaddress;
+        selectedIPAddress = ipaddress.Address.ToString();
+        NavigationManager.NavigateTo($"networkrange/{selectedIPAddress}");
     }
 
 }
