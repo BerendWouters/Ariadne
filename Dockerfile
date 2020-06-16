@@ -7,10 +7,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["Ariadne.Web/Ariadne.Web.csproj", "Ariadne/"]
+COPY [".", "."]
 RUN dotnet restore "Ariadne.Web/Ariadne.Web.csproj"
 COPY . .
-WORKDIR "/src/Ariadne"
+WORKDIR "/src/Ariadne.Web"
 RUN dotnet build "Ariadne.Web.csproj" -c Release -o /app/build
 
 FROM build AS publish
