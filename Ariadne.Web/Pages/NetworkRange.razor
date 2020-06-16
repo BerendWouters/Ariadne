@@ -1,22 +1,162 @@
 ﻿@page "/networkrange/{IPAddress}"
 @using Ariadne.Core
 @using System.Net
+@using System.Net.NetworkInformation
+@using Ariadne.Web.Services
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.Extensions.Logging
+@inject NavigationManager NavigationManager
 
-@inject NetworkDiscoveryService NetworkDiscoveryService
+@inject NetworkDiscoveryManager NetworkDiscoveryManager
+@inject NetworkInterfaceDiscoveryService NetworkInterfaceDiscoveryService
+<style>
+    .card-list{
+        width: 960px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .ip-mat-card {
+        width: 150px;
+        margin: 16px;
+    }
 
+    .ip-mat-card-content {
+        height: 60px;
+        padding: 1rem;
+
+    }
+    .ip-mat-card-content.green-bottom {
+        padding: 1rem;
+        border-bottom: 1px solid greenyellow;
+    }
+
+    .ip-mat-card-content.yellow-bottom {
+        padding: 1rem;
+        border-bottom: 1px solid yellow;
+    }
+
+    .ip-mat-card-content.red-bottom {
+        padding: 1rem;
+        border-bottom: 1px solid red;
+    }
+
+    .icon-green{
+        color: greenyellow;
+    }
+
+    .icon-red {
+        color: red;
+    }
+    .icon-yellow {
+        color: yellow;
+    }
+
+    .ip-mat-card-clean-margin {
+        margin: 0px;
+    }
+
+    .metric{
+        font-size: 11px;
+        }
+</style>
 <h3>NetworkRange</h3>
 <p>Requested network range for @IPAddress</p>
 
 <MatButton @onclick="@StartScanning">Start scanning</MatButton>
 
+@if (NetworkDiscoveryManager.IPAddresses.Count > 0)
+{
+    <div class="card-list">
+        @foreach (var ipaddress in NetworkDiscoveryManager.IPAddresses)
+        {
+            var cardClass = "ip-mat-card-content";
+            switch (ipaddress.Response)
+            {
+                case IPStatus.Success:
+                    cardClass += " green-bottom";
+                    break;
+
+                case IPStatus.Unknown:
+                    cardClass += " yellow-bottom";
+                    break;
+                default:
+                    cardClass += " red-bottom";
+                    break;
+            }
+            <MatCard Class="ip-mat-card">
+                <MatCardContent Class="@cardClass">
+                    @ipaddress.IPAddress
+                    @if (ipaddress.Response == IPStatus.Success)
+                    {
+                        <MatIcon Icon="mood" Class="icon-green"></MatIcon>
+                        <p class="metric">Roundtrip time (ms): @ipaddress.RoundtripTime</p>
+                    }
+                    else if (ipaddress.Response == IPStatus.Unknown)
+                    {
+                        <MatIcon Icon="error_outline" Class="icon-yellow"></MatIcon>
+                    }
+                    else
+                    {
+                        <MatIcon Icon="mood_bad" Class="icon-red"></MatIcon>
+                    }
+                </MatCardContent>
+            </MatCard>
+        }
+</div>
+
+
+}
+
 @code {
-    private string IPAddress => DiscoveredIPAddress.Address.ToString();
+    private HubConnection hubConnection;
 
     [Parameter]
-    public DiscoveredIPAddress DiscoveredIPAddress { get; set; }
+    public string IPAddress { get; set; }
 
-    public void StartScanning()
+    public async Task StartScanning()
     {
-        NetworkDiscoveryService.Start(DiscoveredIPAddress);
+        var interfaces = NetworkInterfaceDiscoveryService.Interfaces;
+        var discoveredIpAddress =
+            interfaces.SelectMany(x => x.IPv4Addresses)
+                .Single(x => x.Address.ToString() == IPAddress);
+        await NetworkDiscoveryManager.Discover(discoveredIpAddress);
     }
+
+    public bool IsConnected =>
+        hubConnection.State == HubConnectionState.Connected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var absoluteUri = NavigationManager.ToAbsoluteUri("/notification");
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(absoluteUri)
+            .ConfigureLogging(logging =>
+            {
+                logging.SetMinimumLevel(LogLevel.Information);
+                logging.AddConsole();
+            })
+            .Build();
+
+        hubConnection.On<string, IPStatus, long>("IPAddressUpdated", (ipaddressToUpdate, status, roundtripTime) =>
+        {
+            var ipAddressToUpdate = NetworkDiscoveryManager.IPAddresses.SingleOrDefault(x => x.IPAddress.ToString() == ipaddressToUpdate);
+            ipAddressToUpdate.Response = status;
+            ipAddressToUpdate.RoundtripTime = roundtripTime;
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+        Console.WriteLine(hubConnection.State);
+        hubConnection.Closed += HubConnectionOnClosed;
+
+
+    }
+
+    private Task HubConnectionOnClosed(Exception arg)
+    {
+        Console.WriteLine("closed");
+        return Task.CompletedTask;
+    }
+
 }

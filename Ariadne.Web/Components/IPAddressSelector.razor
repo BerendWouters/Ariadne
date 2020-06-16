@@ -1,9 +1,9 @@
 ﻿@using Ariadne.Core
-<MatChip Label="bla" LeadingIcon="router" @onclick="@(async () => await OnClick())">
+<MatChip Label="@IPAddress" LeadingIcon="router" @onclick="@(async () => await OnClick())">
 </MatChip>
 
 @code {
-    //private string IPAddress => DiscoveredIPAddress.Address.ToString();
+    private string IPAddress => DiscoveredIPAddress.Address.ToString();
 
     [Parameter]
     public DiscoveredIPAddress DiscoveredIPAddress { get; set; }

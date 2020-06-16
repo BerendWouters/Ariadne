@@ -1,6 +1,10 @@
+using System.Linq;
 using Ariadne.Core;
+using Ariadne.Core.Hubs;
+using Ariadne.Web.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,16 +24,24 @@ namespace Ariadne.Web
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR(option => option.EnableDetailedErrors = true);
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddResponseCompression(opts =>
+            {
+                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                    new[] { "application/octet-stream" });
+            });
             services.AddSingleton<NetworkInterfaceDiscoveryService>();
-            services.AddSingleton<NetworkDiscoveryService>();
-            services.AddSingleton<NetworkDeviceDiscoveryService>();
+            services.AddSingleton<INetworkDiscoveryService, NetworkDiscoveryService>();
+            services.AddSingleton<INetworkDeviceDiscoveryService, NetworkDeviceDiscoveryService>();
+            services.AddSingleton<NetworkDiscoveryManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseResponseCompression();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -49,6 +61,7 @@ namespace Ariadne.Web
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
+                endpoints.MapHub<NotificationHub>("/notification");
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

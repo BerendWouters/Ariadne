@@ -35,7 +35,7 @@ namespace Ariadne.Console
             List<Task> tasks = new List<Task>();
             foreach (var ipv4Address in networkInterfaceDiscoveryService.Interfaces.SelectMany(x => x.IPv4Addresses))
             {
-                tasks.Add(new NetworkDiscoveryService().Start(ipv4Address));
+                //tasks.Add(new NetworkDiscoveryService().Start(ipv4Address.Address));
             }
 
             Task.WaitAll(tasks.ToArray());

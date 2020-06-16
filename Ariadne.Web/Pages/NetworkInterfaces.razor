@@ -7,7 +7,7 @@
 
 <h3>Network interfaces</h3>
 
-@if (networkInterfaces == null)
+@if (_networkInterfaces == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -21,7 +21,7 @@ else
         </tr>
         </thead>
         <tbody>
-        @foreach (var networkInterface in networkInterfaces)
+        @foreach (var networkInterface in _networkInterfaces)
         {
             <tr>
                 <td>@networkInterface.Name 
@@ -36,26 +36,26 @@ else
         </tbody>
     </table>
     <div>
-        @selectedIPAddress
+        @SelectedIpAddress
     </div>
 }
 
 @code {
 
-    public string selectedIPAddress { get; set; }
+    public string SelectedIpAddress { get; set; }
 
-    private List<NetworkInterfaceDiscoveryService.DiscoveredNetworkInterface> networkInterfaces;
+    private List<NetworkInterfaceDiscoveryService.DiscoveredNetworkInterface> _networkInterfaces;
 
     protected override void OnInitialized()
     {
         NetworkInterfaceDiscoveryService.Start();
-        networkInterfaces = NetworkInterfaceDiscoveryService.Interfaces;
+        _networkInterfaces = NetworkInterfaceDiscoveryService.Interfaces;
     }
 
     private void OnIPAddressSelected(DiscoveredIPAddress ipaddress)
     {
-        selectedIPAddress = ipaddress.Address.ToString();
-        NavigationManager.NavigateTo($"networkrange/{selectedIPAddress}");
+        SelectedIpAddress = ipaddress.Address.ToString();
+        NavigationManager.NavigateTo($"networkrange/{SelectedIpAddress}");
     }
 
 }

@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="IPNetwork2" Version="2.5.206" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
   </ItemGroup>
 
 </Project>
